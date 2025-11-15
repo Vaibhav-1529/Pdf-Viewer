@@ -33,6 +33,7 @@ export function Navbar() {
       const user = await graphqlClient.request(LOGOUT_USER);
       if (user) setUser(null);
       localStorage.removeItem("Active_user");
+      window.location.href = "/";
     } catch (error) {
       console.error("Error during sign out:", error);
     }
