@@ -27,3 +27,12 @@ export async function uploadPDF(
     throw new Error("Error uploading PDF");
   }
 }
+export async function deletePDF(_: any, args: { id: string }) {
+  try {
+    await prismaclient.pDF.delete({ where: { id: args.id } });
+    return true;
+  } catch (error) {
+    console.error("Error deleting PDF:", error);
+    throw new Error("Error deleting PDF");
+  } 
+}

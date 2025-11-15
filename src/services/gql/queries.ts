@@ -72,7 +72,11 @@ export const UPLOAD_PDF = gql`
     }
   }
 `;
-
+export const DELETE_PDF = gql`
+  mutation DeletePDF($id: String!) {
+    deletePDF(id: $id)
+  }
+`;
 export const GET_USER_BY_TOKEN = gql`
   query GetUserByToken($userId: String!) {
     getuserByToken(userId: $userId) {

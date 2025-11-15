@@ -8,7 +8,7 @@ import {
   logoutUser,
   getuserByToken,
 } from "@/services/resolver/user";
-import { getPDFs, uploadPDF } from "@/services/resolver/pdf";
+import { deletePDF, getPDFs, uploadPDF } from "@/services/resolver/pdf";
 
 // ----------------------------------------
 // CORS ALLOWED ORIGINS
@@ -63,6 +63,7 @@ const typeDefs = gql`
       data: String!
       userId: String!
     ): PDF!
+    deletePDF(id: String!): Boolean!
   }
 `;
 
@@ -79,6 +80,7 @@ const resolvers = {
   Mutation: {
     createUser,
     uploadPDF,
+    deletePDF,
   },
 };
 
