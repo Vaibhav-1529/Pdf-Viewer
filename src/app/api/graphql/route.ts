@@ -9,7 +9,7 @@ import { getPDFs, uploadPDF } from "@/services/resolver/pdf";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*", // For production, replace * with your frontend URL
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
 };
 
 // === GraphQL schema ===
@@ -76,14 +76,23 @@ async function graphqlHandler(req: NextRequest) {
 
   // Handle POST (GraphQL requests)
   if (req.method === "POST") {
-    const body = await req.json();
-    const { operationName, query, variables } = body;
+    try {
+      const body = await req.json();
+      const { operationName, query, variables } = body;
 
-    await server.start(); // Ensure server is started
-    const result = await server.executeOperation({ query, variables, operationName });
+      // Ensure Apollo server is started
+      await server.start();
+      const result = await server.executeOperation({ query, variables, operationName });
 
-    const res = NextResponse.json(result, { headers: corsHeaders });
-    return res;
+      const res = NextResponse.json(result, { headers: corsHeaders });
+      return res;
+    } catch (error: any) {
+      console.error("GraphQL Error:", error);
+      return new NextResponse(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
   }
 
   // Handle GET (health check)
