@@ -5,12 +5,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createUser, getuserByToken, loginUser, logoutUser } from "@/services/resolver/user";
 import { getPDFs, uploadPDF } from "@/services/resolver/pdf";
 
-// === CORS headers ===
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*", // For production, replace * with your frontend URL
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
-};
+// === Allowed frontend domains ===
+const allowedOrigins = [
+  "https://pdf-viewer-ten-rouge.vercel.app",
+  "https://pdf-viewer-dbt3d2fwe-vaibhav-1529s-projects.vercel.app",
+  "https://pdf-viewer-qab3xkdh2-vaibhav-1529s-projects.vercel.app",
+  // Add more Vercel deployment domains here
+];
 
 // === GraphQL schema ===
 const typeDefs = gql`
@@ -67,45 +68,43 @@ const resolvers = {
 // === Apollo Server ===
 const server = new ApolloServer({ typeDefs, resolvers });
 
-// === Main handler with CORS support ===
 async function graphqlHandler(req: NextRequest) {
-  // Handle preflight OPTIONS requests
-  if (req.method === "OPTIONS") {
-    return new NextResponse(null, { status: 204, headers: corsHeaders });
+  const origin = req.headers.get("origin") || "";
+  const headers: Record<string, string> = {};
+
+  if (allowedOrigins.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+    headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
+    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
   }
 
-  // Handle POST (GraphQL requests)
+  // Preflight request
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204, headers });
+  }
+
+  // GraphQL POST
   if (req.method === "POST") {
     try {
       const body = await req.json();
-      const { operationName, query, variables } = body;
+      const { query, variables, operationName } = body;
 
-      // Ensure Apollo server is started
       await server.start();
       const result = await server.executeOperation({ query, variables, operationName });
 
-      const res = NextResponse.json(result, { headers: corsHeaders });
-      return res;
-    } catch (error: any) {
-      console.error("GraphQL Error:", error);
-      return new NextResponse(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return NextResponse.json(result, { headers });
+    } catch (err: any) {
+      console.error("GraphQL Error:", err);
+      return NextResponse.json({ error: err.message }, { status: 500, headers });
     }
   }
 
-  // Handle GET (health check)
+  // GET health check
   if (req.method === "GET") {
-    return new NextResponse(JSON.stringify({ message: "GraphQL endpoint is running." }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ message: "GraphQL endpoint is running." }, { headers });
   }
 
-  // Method not allowed
-  return new NextResponse("Method Not Allowed", { status: 405, headers: corsHeaders });
+  return new NextResponse("Method Not Allowed", { status: 405, headers });
 }
 
-// Export for App Router
 export { graphqlHandler as POST, graphqlHandler as GET, graphqlHandler as OPTIONS };
