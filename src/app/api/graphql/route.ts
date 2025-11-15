@@ -60,22 +60,45 @@ const resolvers = {
 // Create Apollo Server
 const server = new ApolloServer({ typeDefs, resolvers });
 
-// Start the server (App Router compatible)
-const handler = server.start().then(() => {
-  return async (req: NextRequest) => {
+// Handler function for App Router with CORS
+async function graphqlHandler(req: NextRequest) {
+  // Handle preflight OPTIONS requests
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    });
+  }
+
+  // Only handle POST requests for GraphQL
+  if (req.method === "POST") {
     const body = await req.json();
     const { operationName, query, variables } = body;
 
+    await server.start(); // ensure Apollo server is started
     const result = await server.executeOperation({ query, variables, operationName });
-    return NextResponse.json(result);
-  };
-});
 
-export async function POST(req: NextRequest) {
-  const h = await handler;
-  return h(req);
+    const res = NextResponse.json(result);
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    res.headers.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    return res;
+  }
+
+  // Fallback GET request for health check
+  if (req.method === "GET") {
+    const res = NextResponse.json({ message: "GraphQL endpoint is running." });
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    return res;
+  }
+
+  // Method not allowed
+  return new NextResponse("Method Not Allowed", { status: 405 });
 }
 
-export async function GET(req: NextRequest) {
-  return NextResponse.json({ message: "GraphQL endpoint is running." });
-}
+export { graphqlHandler as POST, graphqlHandler as GET, graphqlHandler as OPTIONS };
