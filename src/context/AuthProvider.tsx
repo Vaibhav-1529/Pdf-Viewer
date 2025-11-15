@@ -1,12 +1,18 @@
 // context/AuthProvider.tsx
 "use client";
 
-import { CheckUser, UserType } from "@/hooks/CheckUser";
+import { CheckUser } from "@/hooks/CheckUser";
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 
 type AuthContextType = {
   User: UserType | null;
   setUser: (u: UserType | null) => void;
+};
+export type UserType = {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
