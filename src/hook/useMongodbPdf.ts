@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthProvider"
 import { GET_PDFS } from "@/services/gql/queries"
 import graphqlClient from "@/services/GraphQlClient/gqlclient"
 import { useEffect, useState } from "react"
-import { PDF } from "../../generated/prisma"
+import { PDF } from "@prisma/client"
 
 
 
