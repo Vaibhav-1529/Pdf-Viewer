@@ -1,21 +1,21 @@
 // src/hooks/useLocalPDFs.ts
 "use client"
 import { useAuth } from "@/context/AuthProvider" 
+import { PdfType } from "@/context/UserContext"
 import { GET_PDFS } from "@/services/gql/queries"
 import graphqlClient from "@/services/GraphQlClient/gqlclient"
 import { useEffect, useState } from "react"
-import { PDF } from "@prisma/client"
 
 
 
 export  function useStoredPDFs() {
-  const [pdfs, setPdfs] = useState<PDF[]>([])
+  const [pdfs, setPdfs] = useState<PdfType[]>([])
   const {User}=useAuth();
   useEffect(() => {
     if(!User) return;
     async function getStoredPDFs() {
 
-        const stored:{getPDFs:PDF[]} =await graphqlClient.request(GET_PDFS,{ userId: User?.id });  
+        const stored:{getPDFs:PdfType[]} =await graphqlClient.request(GET_PDFS,{ userId: User?.id });  
         if (stored) 
             setPdfs(stored?.getPDFs) 
         else {
@@ -31,7 +31,7 @@ export  function useStoredPDFs() {
 
 export function useActivePDF() {
   const { pdfs } = useStoredPDFs() 
-  const [activePDF, setActivePDFState] = useState<PDF | null>(null)
+  const [activePDF, setActivePDFState] = useState<PdfType | null>(null)
 
   useEffect(() => {
     const storedId = localStorage.getItem("activePDFId")
@@ -40,7 +40,7 @@ export function useActivePDF() {
       if (found) setActivePDFState(found)
     }
   }, [pdfs]) 
-  const setActivePDF = (pdf: PDF | null) => {
+  const setActivePDF = (pdf: PdfType | null) => {
     setActivePDFState(pdf)
     if (pdf) {
       localStorage.setItem("activePDFId", pdf.id)

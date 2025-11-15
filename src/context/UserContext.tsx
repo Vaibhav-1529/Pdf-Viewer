@@ -2,13 +2,19 @@
 
 import { useStoredPDFs, useActivePDF,  } from "@/hook/useMongodbPdf";
 import React, { createContext, useContext } from "react"
-import { PDF } from "@prisma/client";
-
+export type PdfType = {
+    userId: string;
+    id: string;
+    name: string;
+    mimeType: string;
+    data: string;
+    createdAt: Date;
+}
   export interface UserContextType {
-  pdfs: PDF[]
-  setPdfs: React.Dispatch<React.SetStateAction<PDF[]>>
-  activePDF: PDF | null
-  setActivePDF: (pdf: PDF | null) => void  
+  pdfs: PdfType[]
+  setPdfs: React.Dispatch<React.SetStateAction<PdfType[]>>
+  activePDF: PdfType | null
+  setActivePDF: (pdf: PdfType | null) => void  
 }
 export function useUserContext() {
   const context = useContext(UserContext);
