@@ -1,8 +1,7 @@
 // src/app/api/graphql/route.ts
-import { startServerAndCreateNextHandler } from "@as-integrations/next";
 import { ApolloServer } from "@apollo/server";
 import { gql } from "graphql-tag";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createUser, getuserByToken, loginUser, logoutUser } from "@/services/resolver/user";
 import { getPDFs, uploadPDF } from "@/services/resolver/pdf";
 
@@ -54,34 +53,29 @@ const typeDefs = gql`
 
 // Resolvers
 const resolvers = {
-  Query: {
-    loginUser,
-    logoutUser,
-    getPDFs,
-    getuserByToken,
-  },
-  Mutation: {
-    createUser,
-    uploadPDF,
-  },
+  Query: { loginUser, logoutUser, getPDFs, getuserByToken },
+  Mutation: { createUser, uploadPDF },
 };
 
-// Apollo Server
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+// Create Apollo Server
+const server = new ApolloServer({ typeDefs, resolvers });
 
-// Export GET and POST using the Next.js App Router handler
-const handler = startServerAndCreateNextHandler<NextRequest>(server, {
-  context: async (req) => ({ req }),
-});
+// Start the server (App Router compatible)
+const handler = server.start().then(() => {
+  return async (req: NextRequest) => {
+    const body = await req.json();
+    const { operationName, query, variables } = body;
 
-// App Router requires export functions
-export async function GET(req: NextRequest) {
-  return handler(req);
-}
+    const result = await server.executeOperation({ query, variables, operationName });
+    return NextResponse.json(result);
+  };
+});
 
 export async function POST(req: NextRequest) {
-  return handler(req);
+  const h = await handler;
+  return h(req);
+}
+
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ message: "GraphQL endpoint is running." });
 }
