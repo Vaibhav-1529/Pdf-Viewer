@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import SlidebarViewer from "@/component/SidebarViewer";
 import { useStoredPDFs } from "@/hook/useMongodbPdf";
 import { useUserContext } from "@/context/UserContext";
@@ -26,18 +26,18 @@ export default function Home() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background overflow-hidden">
-        {/* Sidebar */}
+      <div className="flex w-full h-screen bg-background overflow-hidden">
+
+        {/* ===== Mobile Hamburger Button ===== */}
+        <div className="absolute top-3 left-3 z-50 md:hidden">
+          <SidebarTrigger />
+        </div>
+
         <SlidebarViewer />
 
-        {/* Main PDF Viewer Area */}
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-          <main className="flex-1 w-full h-full p-0 overflow-hidden">
-            <embed
-              src={pdfSrc}
-              type="application/pdf"
-              className="w-[82vw] h-full"
-            />
+          <main className="flex-1 w-full h-full p-0 overflow-hidden flex">
+            <embed src={pdfSrc} type="application/pdf" className="w-full h-full" />
           </main>
         </div>
       </div>

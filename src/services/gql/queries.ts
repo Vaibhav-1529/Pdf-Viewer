@@ -1,44 +1,51 @@
 import { gql } from "graphql-request";
+
 export const LOGIN_USER = gql`
   query LoginUser($email: String!, $password: String!) {
     loginUser(email: $email, password: $password) {
-      email
-      name
       id
+      name
+      email
       username
       avatar
     }
   }
 `;
+
 export const LOGOUT_USER = gql`
-  query Query {
+  query LogoutUser {
     logoutUser
   }
 `;
+
 export const CREATE_USER = gql`
-  mutation Mutation(
+  mutation CreateUser(
     $name: String!
     $email: String!
     $username: String!
     $password: String!
+    $avatar: String
   ) {
     createUser(
       name: $name
       email: $email
       username: $username
       password: $password
+      avatar: $avatar
     ) {
-      email
       id
       name
-      avatar
+      email
       username
+      avatar
     }
   }
 `;
+
 export const GET_PDFS = gql`
   query GetPDFs($userId: String!) {
     getPDFs(userId: $userId) {
+      id
       name
       mimeType
       data
@@ -47,6 +54,7 @@ export const GET_PDFS = gql`
     }
   }
 `;
+
 export const UPLOAD_PDF = gql`
   mutation UploadPDF(
     $name: String!
@@ -54,12 +62,7 @@ export const UPLOAD_PDF = gql`
     $data: String!
     $userId: String!
   ) {
-    uploadPDF(
-      name: $name
-      mimeType: $mimeType
-      data: $data
-      userId: $userId
-    ) {
+    uploadPDF(name: $name, mimeType: $mimeType, data: $data, userId: $userId) {
       id
       name
       mimeType
@@ -71,12 +74,13 @@ export const UPLOAD_PDF = gql`
 `;
 
 export const GET_USER_BY_TOKEN = gql`
-query Query($userId: String!) {
-  getuserByToken(userId: $userId) {
-    avatar
-    email
-    id
-    name
-    username
+  query GetUserByToken($userId: String!) {
+    getuserByToken(userId: $userId) {
+      id
+      name
+      email
+      username
+      avatar
+    }
   }
-} `;
+`;

@@ -1,55 +1,67 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import graphqlClient from "@/services/GraphQlClient/gqlclient"
-import { CREATE_USER } from "@/services/gql/queries"
-import { useAuth,UserType } from "@/context/AuthProvider"
+import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import graphqlClient from "@/services/GraphQlClient/gqlclient";
+import { CREATE_USER } from "@/services/gql/queries";
+import { useAuth, UserType } from "@/context/AuthProvider";
 
 export function SignupButton() {
-  const [open, setOpen] = React.useState(false)
-  const [name, setName] = React.useState("")
-  const [username, setUsername] = React.useState("")
-  const [email, setEmail] = React.useState("")
-  const [password, setPassword] = React.useState("")
-  const [error, setError] = React.useState<string | null>(null)
-  const [loading, setLoading] = React.useState(false)
-  const {setUser} = useAuth();
+  const [open, setOpen] = React.useState(false);
+  const [name, setName] = React.useState("");
+  const [username, setUsername] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
     try {
       const data: { createUser: UserType } = await graphqlClient.request(CREATE_USER, {
         name,
         username,
         email,
         password,
-      })
+      });
 
       if (!data?.createUser) {
-        setError("Failed to create account.")
-        return
+        setError("Failed to create account.");
+        return;
       }
 
-      console.log("Signup successful:", data.createUser)
-      setUser(data?.createUser);
-      setOpen(false)
-      setName("")
-      setUsername("")
-      setEmail("")
-      setPassword("")
+      // Update auth context
+      setUser(data.createUser);
+
+      // Close dialog and reset form
+      setOpen(false);
+      setName("");
+      setUsername("");
+      setEmail("");
+      setPassword("");
     } catch (err: any) {
-      const message = err.response?.errors?.[0]?.message || "Error creating account."
-      setError(message)
+      // Handle GraphQL errors
+      const message =
+        err.response?.errors?.[0]?.message || err.message || "Error creating account.";
+      setError(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -109,20 +121,26 @@ export function SignupButton() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
 
           <Button type="submit" className="w-full mt-2" disabled={loading}>
             {loading ? "Creating account..." : "Sign Up"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground mt-2">
             Already have an account?{" "}
-            <a href="#" className="text-primary hover:underline">
+            <a
+              href="#"
+              className="text-primary hover:underline"
+              onClick={() => setOpen(false)}
+            >
               Sign In
             </a>
           </p>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

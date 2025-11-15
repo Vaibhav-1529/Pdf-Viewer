@@ -1,23 +1,17 @@
 import prismaclient from "../prisma/prisma";
 
-export async function getPDFs(userId: string) {
+export async function getPDFs(_: any, args: { userId: string }) {
   try {
-    return await prismaclient.pDF.findMany({
-      where: { userId },
-    });
-  } catch {
+    return await prismaclient.pDF.findMany({ where: { userId: args.userId } });
+  } catch (error) {
+    console.error("Error fetching PDFs:", error);
     throw new Error("Error fetching PDFs");
   }
 }
 
 export async function uploadPDF(
   _: any,
-  args: {
-    name: string;
-    mimeType: string;
-    data: string;
-    userId: string;
-  }
+  args: { name: string; mimeType: string; data: string; userId: string }
 ) {
   try {
     return await prismaclient.pDF.create({
@@ -30,6 +24,6 @@ export async function uploadPDF(
     });
   } catch (error) {
     console.error("Error uploading PDF:", error);
-    return null;
+    throw new Error("Error uploading PDF");
   }
 }

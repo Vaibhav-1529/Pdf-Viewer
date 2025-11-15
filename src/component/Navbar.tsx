@@ -40,7 +40,7 @@ export function Navbar() {
 
   return (
     <header className="w-full border-b border-border bg-background sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
+      <div className="max-w-7xl mx-auto flex items-center justify-between pr-4 pl-8 py-2">
         {/* LEFT SIDE — NAVIGATION */}
         <NavigationMenu viewport={isMobile}>
           <NavigationMenuList>

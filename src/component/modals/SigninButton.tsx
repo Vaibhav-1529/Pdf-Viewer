@@ -29,8 +29,8 @@ export function SigninButton() {
     setLoading(true)
 
     try {
-      const data: { loginUser: UserType } = await graphqlClient.request(LOGIN_USER, { email, password })
-
+      const data = await graphqlClient.request(LOGIN_USER, { email, password })
+    console.log("User logged in 1:", data);
       if (!data?.loginUser) {
         setError("Invalid email or password.")
         return
