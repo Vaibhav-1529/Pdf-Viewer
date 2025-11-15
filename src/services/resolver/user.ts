@@ -22,7 +22,7 @@ export async function createUser(
       },
     });
     console.log(existingUser);
-    if (existingUser==null) {
+    if (existingUser) {
       throw new Error("Email or username already exists");
     }
 
