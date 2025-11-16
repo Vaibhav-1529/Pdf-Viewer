@@ -29,11 +29,16 @@ export default function SidebarViewer() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
 
-  const [aboutPDF, setAboutPDF] = useState<PdfType|null>(null);
-  const [deletePDF, setDeletePDF] = useState<PdfType|null>(null);
+  const [aboutPDF, setAboutPDF] = useState<PdfType | null>(null);
+  const [deletePDF, setDeletePDF] = useState<PdfType | null>(null);
+
+  // LOADING STATES
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
+  // 🔵 UPLOAD PDF WITH LOADING
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!User?.id) {
       alert("Please log in before uploading.");
@@ -43,8 +48,11 @@ export default function SidebarViewer() {
     const files = event.target.files;
     if (!files) return;
 
+    setIsUploading(true);
+
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
+
       reader.onload = async () => {
         const base64Data = reader.result as string;
 
@@ -64,14 +72,19 @@ export default function SidebarViewer() {
           setActivePDF(uploadedPDF);
         } catch (error) {
           console.error("Upload error:", error);
+        } finally {
+          setIsUploading(false);
         }
       };
+
       reader.readAsDataURL(file);
     });
   };
 
+  // 🔴 DELETE PDF WITH LOADING
   const confirmDelete = async (pdf: any) => {
     try {
+      setIsDeleting(true);
       await graphqlClient.request(DELETE_PDF, { id: pdf.id });
 
       setPdfs((prev) => prev.filter((p) => p.id !== pdf.id));
@@ -80,6 +93,8 @@ export default function SidebarViewer() {
       setDeletePDF(null);
     } catch (error) {
       console.error("Delete error:", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -92,16 +107,32 @@ export default function SidebarViewer() {
               📁 Your PDFs
             </SidebarGroupLabel>
 
-            {/* Upload Button */}
+            {/* UPLOAD BUTTON */}
             <div className="px-3 pb-3">
               <button
+                disabled={isUploading}
                 onClick={handleUploadClick}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-dashed border-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/10 transition-all"
+                className={`
+                  w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-dashed 
+                  transition-all
+                  ${isUploading 
+                    ? "opacity-50 cursor-not-allowed" 
+                    : "border-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/10"
+                  }
+                `}
               >
-                <UploadCloud className="w-5 h-5 text-blue-600" />
-                <span className="font-medium text-blue-700 dark:text-blue-300">
-                  Upload PDF
-                </span>
+                {isUploading ? (
+                  <span className="animate-pulse text-blue-600">
+                    Uploading...
+                  </span>
+                ) : (
+                  <>
+                    <UploadCloud className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium text-blue-700 dark:text-blue-300">
+                      Upload PDF
+                    </span>
+                  </>
+                )}
               </button>
 
               <input
@@ -130,11 +161,13 @@ export default function SidebarViewer() {
                           setActivePDF(pdf);
                           router.replace(`/viewer?pdf=${pdf.name}`);
                         }}
-                        className={`flex items-center gap-3 flex-1 px-3 py-2 rounded-lg border transition-all duration-200 ${
-                          isActive
-                            ? "bg-blue-500/20 dark:bg-blue-400/20 border-blue-500"
+                        className={`
+                          flex items-center gap-3 flex-1 px-3 py-2 rounded-lg border transition-all 
+                          ${isActive 
+                            ? "bg-blue-500/20 dark:bg-blue-400/20 border-blue-500" 
                             : "hover:bg-blue-500/10 dark:hover:bg-blue-400/10 border-transparent"
-                        }`}
+                          }
+                        `}
                       >
                         <FileText className="w-4 h-4 opacity-80" />
                         <span className="truncate">{pdf.name}</span>
@@ -156,13 +189,18 @@ export default function SidebarViewer() {
       </Sidebar>
 
       {/* MODALS */}
-      <AboutPDFModal open={!!aboutPDF} pdf={aboutPDF} onClose={() => setAboutPDF(null)} />
+      <AboutPDFModal 
+        open={!!aboutPDF} 
+        pdf={aboutPDF} 
+        onClose={() => setAboutPDF(null)} 
+      />
 
       <DeletePDFModal
         open={!!deletePDF}
         pdf={deletePDF}
         onClose={() => setDeletePDF(null)}
         onConfirm={confirmDelete}
+        isDeleting={isDeleting}
       />
     </>
   );
