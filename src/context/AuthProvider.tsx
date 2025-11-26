@@ -1,4 +1,3 @@
-// context/AuthProvider.tsx
 "use client";
 
 import { CheckUser } from "@/hooks/CheckUser";

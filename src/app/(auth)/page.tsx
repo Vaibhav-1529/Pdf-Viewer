@@ -21,10 +21,11 @@ export default function HomePage() {
   const { pdfs, setPdfs, activePDF, setActivePDF } = useUserContext();
   const { User } = useAuth();
   const router = useRouter();
-
+  const [fileuploading, setFileUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<any | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFileUploading(true);
     if (!User?.id) {
       alert("Please log in before uploading a PDF.");
       return;
@@ -53,7 +54,7 @@ export default function HomePage() {
           setSelectedFile(uploadedPDF);
           setPdfs((prev) => [...prev, uploadedPDF]);
           setActivePDF(uploadedPDF);
-
+          setFileUploading(false);
           console.log("PDF successfully uploaded:", uploadedPDF);
         } catch (error) {
           console.error("Error uploading PDF:", error);
@@ -66,11 +67,10 @@ export default function HomePage() {
 
   const handleViewPdf = () => {
     if (selectedFile) {
-      // View the newly uploaded file
       router.push(`/viewer?pdf=${encodeURIComponent(selectedFile.id)}`);
     } else if (pdfs.length > 0) {
       setActivePDF(null);
-      router.push("/viewer"); // viewer page without query
+      router.push("/viewer"); 
     } else {
       alert("No PDFs available to view.");
     }
@@ -110,7 +110,7 @@ export default function HomePage() {
             <Button asChild variant="default" size="lg" className="cursor-pointer gap-2">
               <div>
                 <Upload className="w-5 h-5 inline mr-2" />
-                {selectedFile ? "Upload Another PDF" : "Upload Your PDF"}
+                {fileuploading ? "Uploading..." : "Upload PDF"}
               </div>
             </Button>
           </label>

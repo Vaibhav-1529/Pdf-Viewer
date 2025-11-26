@@ -44,17 +44,14 @@ export function SignupButton() {
         return;
       }
 
-      // Update auth context
       setUser(data.createUser);
 
-      // Close dialog and reset form
       setOpen(false);
       setName("");
       setUsername("");
       setEmail("");
       setPassword("");
     } catch (err: any) {
-      // Handle GraphQL errors
       const message =
         err.response?.errors?.[0]?.message || err.message || "Error creating account.";
       setError(message);

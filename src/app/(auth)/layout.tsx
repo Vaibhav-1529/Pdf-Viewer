@@ -1,6 +1,3 @@
-// app/(auth)/layout.tsx
-"use client";
-
 import { Navbar } from "@/component/Navbar";
 import { ReactNode } from "react";
 import AuthProvider from "@/context/AuthProvider";

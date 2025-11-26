@@ -23,7 +23,6 @@ export default function PDFActionsMenu({ pdf, onAbout, onDelete }: PDFActionsPro
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-40">
-        {/* ABOUT */}
         <DropdownMenuItem
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => onAbout(pdf)}
@@ -31,8 +30,6 @@ export default function PDFActionsMenu({ pdf, onAbout, onDelete }: PDFActionsPro
           <FileText className="w-4 h-4" />
           About PDF
         </DropdownMenuItem>
-
-        {/* DELETE */}
         <DropdownMenuItem
           className="flex items-center gap-2 text-red-600 cursor-pointer"
           onClick={() => onDelete(pdf)}

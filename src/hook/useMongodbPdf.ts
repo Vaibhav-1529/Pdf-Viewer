@@ -1,4 +1,3 @@
-// src/hooks/useLocalPDFs.ts
 "use client";
 
 import { useAuth } from "@/context/AuthProvider";
@@ -6,17 +5,13 @@ import { PdfType } from "@/context/UserContext";
 import { GET_PDFS } from "@/services/gql/queries";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
 import { useEffect, useState } from "react";
-
-/* --------------------------------------------------
-    HOOK 1: Fetch Stored PDFs with Loading State
--------------------------------------------------- */
 export function useStoredPDFs() {
   const [pdfs, setPdfs] = useState<PdfType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { User } = useAuth();
 
   useEffect(() => {
-    if (!User?.id) return; // No fetch until user exists
+    if (!User?.id) return;
 
     async function getStoredPDFs() {
       try {
@@ -42,14 +37,9 @@ export function useStoredPDFs() {
   return { pdfs, setPdfs, isLoading };
 }
 
-/* --------------------------------------------------
-    HOOK 2: Manage Active PDF
--------------------------------------------------- */
 export function useActivePDF() {
   const { pdfs } = useStoredPDFs();
   const [activePDF, setActivePDFState] = useState<PdfType | null>(null);
-
-  // Load active PDF from localStorage whenever PDFs change
   useEffect(() => {
     if (pdfs.length === 0) return;
 
@@ -59,8 +49,6 @@ export function useActivePDF() {
     const found = pdfs.find((p) => p.id === storedId);
     if (found) setActivePDFState(found);
   }, [pdfs]);
-
-  // Setter syncs with localStorage
   const setActivePDF = (pdf: PdfType | null) => {
     setActivePDFState(pdf);
 

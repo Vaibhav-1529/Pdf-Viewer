@@ -17,8 +17,6 @@ import { useAuth } from "@/context/AuthProvider";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
 import { UPLOAD_PDF, DELETE_PDF } from "@/services/gql/queries";
 import { useRouter } from "next/navigation";
-
-// Components
 import PDFActionsMenu from "./modals/PDFActionsMenu";
 import AboutPDFModal from "./modals/AboutPDFModal";
 import DeletePDFModal from "./modals/DeletePDFModal";
@@ -31,14 +29,10 @@ export default function SidebarViewer() {
 
   const [aboutPDF, setAboutPDF] = useState<PdfType | null>(null);
   const [deletePDF, setDeletePDF] = useState<PdfType | null>(null);
-
-  // LOADING STATES
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleUploadClick = () => fileInputRef.current?.click();
-
-  // 🔵 UPLOAD PDF WITH LOADING
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!User?.id) {
       alert("Please log in before uploading.");
@@ -80,23 +74,28 @@ export default function SidebarViewer() {
       reader.readAsDataURL(file);
     });
   };
+const confirmDelete = async (pdf: any) => {
+  try {
+    setIsDeleting(true);
+    await graphqlClient.request(DELETE_PDF, { id: pdf.id });
 
-  // 🔴 DELETE PDF WITH LOADING
-  const confirmDelete = async (pdf: any) => {
-    try {
-      setIsDeleting(true);
-      await graphqlClient.request(DELETE_PDF, { id: pdf.id });
+    setPdfs((prev) => {
+      const updated = prev.filter((p) => p.id !== pdf.id);
 
-      setPdfs((prev) => prev.filter((p) => p.id !== pdf.id));
-      if (activePDF?.id === pdf.id) setActivePDF(null);
+      if (activePDF?.id === pdf.id) {
+        setActivePDF(updated[0] || null);
+      }
 
-      setDeletePDF(null);
-    } catch (error) {
-      console.error("Delete error:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+      return updated;
+    });
+
+    setDeletePDF(null);
+  } catch (error) {
+    console.error("Delete error:", error);
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   return (
     <>
@@ -106,8 +105,6 @@ export default function SidebarViewer() {
             <SidebarGroupLabel className="text-lg font-semibold px-3 py-2">
               📁 Your PDFs
             </SidebarGroupLabel>
-
-            {/* UPLOAD BUTTON */}
             <div className="px-3 pb-3">
               <button
                 disabled={isUploading}
@@ -143,8 +140,6 @@ export default function SidebarViewer() {
                 onChange={handleFileUpload}
               />
             </div>
-
-            {/* PDF LIST */}
             <SidebarMenu className="space-y-1 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400/30">
               {pdfs.length === 0 ? (
                 <p className="text-sm text-muted-foreground p-3 italic opacity-80">
@@ -172,8 +167,6 @@ export default function SidebarViewer() {
                         <FileText className="w-4 h-4 opacity-80" />
                         <span className="truncate">{pdf.name}</span>
                       </SidebarMenuButton>
-
-                      {/* 3 DOT MENU */}
                       <PDFActionsMenu
                         pdf={pdf}
                         onAbout={() => setAboutPDF(pdf)}
@@ -187,8 +180,6 @@ export default function SidebarViewer() {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-
-      {/* MODALS */}
       <AboutPDFModal 
         open={!!aboutPDF} 
         pdf={aboutPDF} 

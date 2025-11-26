@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -42,7 +41,6 @@ export function Navbar() {
     <header className="w-full border-b border-border bg-background sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
 
-        {/* LEFT SIDE — NAVIGATION */}
         <NavigationMenu viewport={isMobile}>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -50,15 +48,9 @@ export function Navbar() {
                 <Link href="/">Home</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="#">Docs</Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* RIGHT SIDE — USER SECTION */}
         <div className="flex items-center gap-3">
           {User ? (
             <DropdownMenu>
@@ -79,7 +71,6 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            // 👇 FIXED: Show on ALL screens
             <div className="flex gap-2 sm:gap-3">
               <SigninButton />
               <SignupButton />

@@ -1,4 +1,3 @@
-// src/app/api/graphql/route.ts
 import { ApolloServer } from "@apollo/server";
 import { NextRequest, NextResponse } from "next/server";
 import { gql } from "graphql-tag";
@@ -9,20 +8,12 @@ import {
   getuserByToken,
 } from "@/services/resolver/user";
 import { deletePDF, getPDFs, uploadPDF } from "@/services/resolver/pdf";
-
-// ----------------------------------------
-// CORS ALLOWED ORIGINS
-// ----------------------------------------
 const allowedOrigins = [
   "http://localhost:3000",
   "https://pdf-viewer-ten-rouge.vercel.app",
   "https://pdf-viewer-dbt3d2fwe-vaibhav-1529s-projects.vercel.app",
   "https://pdf-viewer-qab3xkdh2-vaibhav-1529s-projects.vercel.app",
 ];
-
-// ----------------------------------------
-// GRAPHQL SCHEMA
-// ----------------------------------------
 const typeDefs = gql`
   type User {
     id: String!
@@ -67,9 +58,6 @@ const typeDefs = gql`
   }
 `;
 
-// ----------------------------------------
-// RESOLVERS
-// ----------------------------------------
 const resolvers = {
   Query: {
     loginUser,
@@ -83,21 +71,12 @@ const resolvers = {
     deletePDF,
   },
 };
-
-// ----------------------------------------
-// APOLLO SERVER (START ONLY ONCE)
-// ----------------------------------------
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-// This ensures Apollo starts only ONCE (fixing your infinite-start bug)
 const startServer = server.start();
-
-// ----------------------------------------
-// MAIN HANDLER
-// ----------------------------------------
 export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
   const headers: Record<string, string> = {};
@@ -109,7 +88,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await startServer; // <— FIX HERE (Only once ever!)
+    await startServer;
 
     const { query, variables, operationName } = await req.json();
 
@@ -129,8 +108,6 @@ return NextResponse.json(payload, { headers });
     );
   }
 }
-
-// OPTIONS handler (CORS preflight)
 export async function OPTIONS(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
   const headers: Record<string, string> = {};
@@ -143,8 +120,6 @@ export async function OPTIONS(req: NextRequest) {
 
   return new NextResponse(null, { status: 204, headers });
 }
-
-// Optional GET handler
 export async function GET() {
   return NextResponse.json({ status: "GraphQL API Running" });
 }

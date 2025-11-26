@@ -1,18 +1,12 @@
-// src/services/resolver/user.ts
 import { cookies } from "next/headers";
 import prismaclient from "../prisma/prisma";
 import bcrypt from "bcryptjs";
 import { User } from "@prisma/client";
-
-// ------------------------
-// Create User Resolver
-// ------------------------
 export async function createUser(
   _: any,
   args: { name: string; email: string; username: string; password: string; avatar?: string }
 ) {
   try {
-    // Check for existing username or email
     const existingUser = await prismaclient.user.findFirst({
       where: {
         OR: [
@@ -26,10 +20,8 @@ export async function createUser(
       throw new Error("Email or username already exists");
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(args.password, 10);
 
-    // Create new user
     const newUser = await prismaclient.user.create({
       data: {
         name: args.name,
@@ -46,21 +38,13 @@ export async function createUser(
     throw new Error(error.message || "Error creating user");
   }
 }
-
-// ------------------------
-// Login User Resolver
-// ------------------------
 export async function loginUser(_: any, args: { email: string; password: string }) {
   try {
-    // Find user by email
     const user = await prismaclient.user.findUnique({ where: { email: args.email } })as User | null;
     if (!user?.id) throw new Error("Invalid credentials");
 
-    // Compare password with hashed password
     const passwordMatch = await bcrypt.compare(args.password, user.password);
     if (!passwordMatch) throw new Error("Invalid credentials");
-
-    // Set cookie
     const cookieStore = await cookies();
     cookieStore.set({
       name: "Active_user",
@@ -78,9 +62,6 @@ export async function loginUser(_: any, args: { email: string; password: string 
   }
 }
 
-// ------------------------
-// Logout User Resolver
-// ------------------------
 export async function logoutUser() {
   try {
     const cookieStore = await cookies();
@@ -91,10 +72,6 @@ export async function logoutUser() {
     return false;
   }
 }
-
-// ------------------------
-// Get User By Token Resolver
-// ------------------------
 export async function getuserByToken(_: any, args: { userId: string }) {
   try {
     return await prismaclient.user.findUnique({ where: { id: args.userId } });
