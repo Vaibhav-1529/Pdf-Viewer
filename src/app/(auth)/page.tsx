@@ -116,7 +116,7 @@ export default function HomePage() {
           </label>
 
           <Button variant="outline" size="lg" className="gap-2" onClick={handleViewPdf}>
-            {selectedFile ? "View Uploaded PDF" : "View PDFs"}
+            {selectedFile ? "View Selected PDF" : "View Uploaded PDFs"}
           </Button>
         </div>
 
@@ -156,7 +156,7 @@ export default function HomePage() {
         transition={{ delay: 1.2 }}
         className="mt-16 text-sm text-muted-foreground"
       >
-        Made with ❤️ by <span className="text-primary font-medium">Vibhu Saini</span> — 2025
+        Made by <span className="text-primary font-medium">Vaibhav Saini</span> — 2025
       </motion.footer>
     </div>
   );

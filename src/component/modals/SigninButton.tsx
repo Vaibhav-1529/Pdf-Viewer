@@ -38,10 +38,8 @@ export function SigninButton() {
 
       console.log("✅ Login successful:", data.loginUser)
 
-      // ✅ Step 1: Close the dialog first
       setOpen(false)
 
-      // ✅ Step 2: Wait for dialog to finish closing (Radix animates ~150ms)
       setTimeout(() => {
         setUser(data.loginUser)
       }, 200)

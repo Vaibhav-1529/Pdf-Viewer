@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { PdfType } from "@/context/UserContext";
 import { GET_PDFS } from "@/services/gql/queries";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 export function useStoredPDFs() {
   const [pdfs, setPdfs] = useState<PdfType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +12,6 @@ export function useStoredPDFs() {
 
   useEffect(() => {
     if (!User?.id) return;
-
     async function getStoredPDFs() {
       try {
         setIsLoading(true);
@@ -51,7 +50,6 @@ export function useActivePDF() {
   }, [pdfs]);
   const setActivePDF = (pdf: PdfType | null) => {
     setActivePDFState(pdf);
-
     if (pdf) {
       localStorage.setItem("activePDFId", pdf.id);
     } else {
