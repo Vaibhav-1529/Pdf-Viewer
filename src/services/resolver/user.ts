@@ -31,7 +31,15 @@ export async function createUser(
         avatar: args.avatar,
       },
     });
-
+        const cookieStore = await cookies();
+cookieStore.set({
+      name: "Active_user",
+      value: newUser.id,
+      httpOnly: true,
+      path: "/",
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
     return newUser;
   } catch (error: any) {
     console.error("Error creating user:", error);
