@@ -43,7 +43,7 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
     }
     setIsSharing(true);
     try {
-      if(password.length<4){
+      if(enablePassword&&password.length<4){
         alert("Password atleast contain 4 character")
         return;
       }
