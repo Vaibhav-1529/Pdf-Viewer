@@ -25,8 +25,8 @@ interface SharePdfModalProps {
   islogo?: boolean;
 }
 
-export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
-  const [open, setOpen] = useState(false);
+export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
+  // const [open, setOpen] = useState(false);
   const [enablePassword, setEnablePassword] = useState(false);
   const [password, setPassword] = useState("");
   const [sharedFile, setSharedFile] = useState<SharedPdfType | null>(null);
@@ -34,6 +34,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
   const [isOnetime, setIsOnetime] = useState(false);
   const [isCopying, setIsCopying] = useState<boolean>(false);
   const { setSharedFiles, sharedFiles } = useUserContext();
+  
   const handleShare = async () => {
     if (!pdf) return;
     if (enablePassword && password.trim() === "") {
@@ -86,18 +87,9 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
   }, [open]);
   return (
     <Dialog open={open} onOpenChange={(val) => !isSharing && setOpen(val)}>
-      <DialogTrigger asChild>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="p-2 rounded-md hover:bg-gray-100"
-          onClick={() => pdf && setOpen(true)}
-        >
-          <Share2 className="w-5 h-5 text-primary" />
-        </motion.button>
-      </DialogTrigger>
+
 
       <DialogContent className="max-w-sm p-0 overflow-hidden">
-        {/* Modal Animation Wrapper */}
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -107,11 +99,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {islogo ? (
-                "Share PDF"
-              ) : (
-                <Share2 className="w-5 h-5 text-primary" />
-              )}
+                <Share2 className="w-5 h-5 text-primary" />Share PDF
             </DialogTitle>
 
             <DialogDescription>
@@ -120,7 +108,6 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Password Option */}
           <motion.div
             whileHover={{ scale: 1.01 }}
             className="flex items-center gap-2 mt-4"
@@ -128,6 +115,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
             <Checkbox
               id="enable-password"
               checked={enablePassword}
+              onClick={(e)=>e.stopPropagation()}
               onCheckedChange={(val) => setEnablePassword(val === true)}
             />
             <label htmlFor="enable-password" className="cursor-pointer">
@@ -152,6 +140,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="mt-1"
+                  onClick={(e)=>e.stopPropagation()}
                 />
               </motion.div>
             )}
@@ -165,6 +154,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
             <Checkbox
               id="is-Onetime"
               checked={isOnetime}
+              onClick={(e)=>e.stopPropagation()}
               onCheckedChange={(val) => setIsOnetime(val === true)}
             />
             <label htmlFor="is-Onetime" className="cursor-pointer">
@@ -183,7 +173,9 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
                     sharedFile.unique_address}
                 </p>
                 <button
-                  onClick={() => copyToClipboard()}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    copyToClipboard()}}
                   className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
                   title="copy"
                 >
@@ -209,7 +201,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
-              <Button onClick={handleShare} disabled={isSharing}>
+              <Button onClick={handleShare} disabled={isSharing||sharedFile!=null}>
                 {isSharing ? "Sharing..." : "Share"}
               </Button>
             </motion.div>
