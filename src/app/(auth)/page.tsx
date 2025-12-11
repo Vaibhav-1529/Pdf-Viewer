@@ -24,17 +24,18 @@ export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<any | null>(null);
 
 const handleFileUpload = async (event: any) => {
-  setFileUploading(true);
-    try {
-    const UploadedPdf=await uploadPdf({files:event.target.files,User})
-    setSelectedFile(UploadedPdf);
-    setPdfs((prev) => [...prev, UploadedPdf]);
-    setActivePDF(UploadedPdf);
-  } catch (error) {
-    console.log("UPLOAD ERROR:", error);
-  } finally {
-    setFileUploading(false);
-  }
+  // setFileUploading(true);
+  //   try {
+  //   const UploadedPdf=await uploadPdf({files:event.target.files,User})
+  //   setSelectedFile(UploadedPdf);
+  //   setPdfs((prev) => [...prev, UploadedPdf]);
+  //   setActivePDF(UploadedPdf);
+  // } catch (error) {
+  //   console.log("UPLOAD ERROR:", error);
+  // } finally {
+  //   setFileUploading(false);
+  // }
+  alert("Please log in first to upload your PDF.")
 };
 
   const handleViewPdf = () => {
