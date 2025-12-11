@@ -14,7 +14,7 @@ export async function getPresignedURL(mime_type: string) {
   return { key, url };
 }
 const client = new S3Client({
-  region: "eu-north-1",
+  region: process.env.S3_REGION!,
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,
