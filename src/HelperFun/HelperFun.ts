@@ -2,7 +2,6 @@ import { useAuth } from "@/context/AuthProvider";
 import { PdfType } from "@/context/UserContext";
 import { DELETE_PDF, DELETE_PDF_FROM_S3, DELETE_SHARED_PDF, GET_PDF_BY_ID, GET_PRESIGNED_URL, UPLOAD_PDF } from "@/services/gql/queries";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
-import { error } from "console";
 
 export async function uploadPdf({files,User}: {files: FileList | null,User:any}) {
   const file = files?.[0];
@@ -20,8 +19,8 @@ export async function uploadPdf({files,User}: {files: FileList | null,User:any})
       body: file,
     });
     const uploadedPDF = await graphqlClient.request(UPLOAD_PDF, {
-      name: file.name,
-      mime_type: file.type,
+      name: file?.name,
+      mime_type: file?.type,
       key: key,
       user_id: User?.id,
       size: file.size,

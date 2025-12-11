@@ -6,15 +6,13 @@ import { supabaseAdmin } from '../SupaBase/supabaseClient';
 
 export async function getPresignedURL(mime_type: string) {
   const id = uuidv4();
-  const ext = "pdf";
-  const key = `${id}.${ext}`;
-
+  const key = `${id}.${mime_type}`;
   const url = await createPresignedUrlWithClient(key);
-
   return { key, url };
 }
 const client = new S3Client({
   region: process.env.S3_REGION!,
+  forcePathStyle: true,
   credentials: {
     accessKeyId: process.env.S3_ACCESS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,

@@ -21,6 +21,7 @@ export default function LandingPage() {
   const handleFileUpload = async (event: any) => {
     setFileUploading(true);
     try {
+      console.log(event.target.value)
       const UploadedPdf = await uploadPdf({ files: event.target.files, User });
       setSelectedFile(UploadedPdf);
       setPdfs((prev) => [...prev, UploadedPdf]);

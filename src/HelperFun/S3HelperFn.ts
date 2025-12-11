@@ -5,12 +5,14 @@ import graphqlClient from "../services/GraphQlClient/gqlclient";
 import { GET_PRESIGNED_URL } from "../services/gql/queries";
 
 const client = new S3Client({
-  region: process.env.S3_REGION!,
+  region: "eu-north-1",
+  forcePathStyle: true,
   credentials: {
-    accessKeyId: process.env.S3_ACESSS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,
   },
 });
+
 
 
 export const createPresignedUrlWithClient = (key: any) => {
