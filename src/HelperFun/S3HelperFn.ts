@@ -7,7 +7,7 @@ import { GET_PRESIGNED_URL } from "../services/gql/queries";
 const client = new S3Client({
   region: "eu-north-1",
   credentials: {
-    accessKeyId: process.env.S3_SECRET_KEY!,
+    accessKeyId: process.env.S3_ACESSS_KEY!,
     secretAccessKey: process.env.S3_SECRET_KEY!,
   },
 });
