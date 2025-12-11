@@ -66,7 +66,6 @@ function openPdf(pdf: PdfType) {
                   <p className="text-sm text-gray-400">
                     {new Date(pdf.created_at).toLocaleDateString()}
                   </p>
-                  <SharedPdfModal pdf={pdf} islogo={true} />
                   <PDFActionsMenu
                     pdf={pdf}
                     onAbout={() => setAboutPDF(pdf)}

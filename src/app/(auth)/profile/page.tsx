@@ -92,13 +92,6 @@ useEffect(() => {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => downloadPdf(pdf.key)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <Download className="w-5 h-5" />
-                </button>
-
-                <button
                   onClick={() => setDeleting(pdf)}
                   className="p-2 rounded-lg hover:bg-red-100"
                 >
