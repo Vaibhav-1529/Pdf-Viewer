@@ -52,11 +52,11 @@ function openPdf(pdf: PdfType) {
             No PDFs uploaded yet.
           </p>
         ) : (
-          pdfs?.map((pdf: any) => (
+          pdfs?.map((pdf: PdfType) => (
             <Card key={pdf.id}>
               <CardContent className="flex justify-between items-center p-4">
                 <div>
-                  <p onClick={()=>{openPdf(pdf)}} className="font-semibold cursor-pointer hover:underline">{pdf.name}</p>
+                  <p onClick={()=>{openPdf(pdf)}} className="font-semibold cursor-pointer hover:underline">{pdf?.name}</p>
                   <p className="text-sm text-gray-500">
                     {(pdf.size / 1024).toFixed(1)} KB • {pdf.mime_type}
                   </p> 
