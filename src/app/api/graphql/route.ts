@@ -9,7 +9,7 @@ import { deleteSharedPDF, getOneSharedPdf, getSharedPDFs, SharePDF } from "@/ser
 const allowedOrigins = [
   "http://localhost:3000",
   "https://studio.apollographql.com",
-  "https://pdf-viewer-ivory.vercel.app/home",
+  "https://pdf-viewer-ivory.vercel.app",
   "https://pdf-store-s3.s3.eu-north-1.amazonaws.com"
 ];
 
