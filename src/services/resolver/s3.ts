@@ -16,8 +16,8 @@ export async function getPresignedURL(mime_type: string) {
 const client = new S3Client({
   region: "eu-north-1",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY!,
-    secretAccessKey: process.env.AWS_SECRET_KEY!,
+    accessKeyId: process.env.S3_SECRET_KEY!,
+    secretAccessKey: process.env.S3_SECRET_KEY!,
   },
 });
 
@@ -25,7 +25,7 @@ const client = new S3Client({
 export async function getPdfUrl(_: any, { key }: any) {
    try {
     const command = new GetObjectCommand({
-      Bucket: process.env.BUCKET_NAME!,
+      Bucket: process.env.S3_BUCKET_NAME!,
       Key: key
     });
     const url = await getSignedUrl(client, command, { expiresIn: 60 });
@@ -38,7 +38,7 @@ export async function getPdfUrl(_: any, { key }: any) {
 export async function deleteFromS3(_: any, { key }: any) {
   try {
     const command = new DeleteObjectCommand({
-      Bucket: process.env.BUCKET_NAME!,
+      Bucket: process.env.S3_BUCKET_NAME!,
       Key: key,
     });
 
@@ -62,7 +62,7 @@ export async function deleteFromS3(_: any, { key }: any) {
     if (error) throw error;
     if (!data) return { error: "File not found" };
     const command = new GetObjectCommand({
-      Bucket: process.env.BUCKET_NAME!,
+      Bucket: process.env.S3_BUCKET_NAME!,
       Key: data.key,
     });
 

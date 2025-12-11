@@ -178,7 +178,7 @@ export default function SharedPdfModal({ pdf, islogo }: SharePdfModalProps) {
             >
               <div className="flex items-center gap-2 mt-1 w-full ">
                 <p className="text-sm text-gray-600 break-all w-full bg-gray-50 p-2 rounded-md border ">
-                  {process.env.NEXT_PUBLIC_BASE_URL +
+                  {process.env.NEXT_PUBLIC_APP_URL +
                     "/" +
                     sharedFile.unique_address}
                 </p>

@@ -7,15 +7,15 @@ import { GET_PRESIGNED_URL } from "../services/gql/queries";
 const client = new S3Client({
   region: "eu-north-1",
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY!,
-    secretAccessKey: process.env.AWS_SECRET_KEY!,
+    accessKeyId: process.env.S3_SECRET_KEY!,
+    secretAccessKey: process.env.S3_SECRET_KEY!,
   },
 });
 
 
 export const createPresignedUrlWithClient = (key: any) => {
   const command = new PutObjectCommand({
-    Bucket: process.env.BUCKET_NAME,
+    Bucket: process.env.S3_BUCKET_NAME,
     Key: key,
   });
   return getSignedUrl(client, command, { expiresIn: 3600 });
