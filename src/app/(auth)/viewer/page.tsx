@@ -99,9 +99,6 @@ export default function Home() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full w-full gap-3">
                 <p className="text-lg text-muted-foreground">No PDF selected.</p>
-                <Link href="/">
-                  <Button>Go to Home</Button>
-                </Link>
               </div>
             )}
           </main>
