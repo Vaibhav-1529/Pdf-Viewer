@@ -85,7 +85,7 @@ export async function SharePDF(
       is_onetime: args.is_onetime,
     });
     if (!allowed) {
-      return pdf;
+      return {data:pdf,isexist:true};
     }
     const { data, error } = await supabaseAdmin
       .from("shared_files")
@@ -100,10 +100,10 @@ export async function SharePDF(
       })
       .select()
       .single();
-
+      
     if (error) throw error;
     console.log("Uploaded PDF record:", data);
-    return data;
+    return {data:data,isexist:false};
   } catch (error) {
     console.error("Error uploading PDF:", error);
     throw new Error("Error uploading PDF");

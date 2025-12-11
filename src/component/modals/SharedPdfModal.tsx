@@ -32,9 +32,10 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
   const [sharedFile, setSharedFile] = useState<SharedPdfType | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [isOnetime, setIsOnetime] = useState(false);
+  const [alreadyExistsWarning, setAlreadyExistsWarning] = useState(false);
   const [isCopying, setIsCopying] = useState<boolean>(false);
   const { setSharedFiles, sharedFiles } = useUserContext();
-  
+
   const handleShare = async () => {
     if (!pdf) return;
     if (enablePassword && password.trim() === "") {
@@ -43,15 +44,14 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
     }
     setIsSharing(true);
     try {
-      if(enablePassword&&password.length<4){
-        alert("Password atleast contain 4 character")
+      if (enablePassword && password.length < 4) {
+        alert("Password atleast contain 4 character");
         return;
       }
       const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY!;
       const hashval = CryptoJS.AES.encrypt(password, secretKey).toString();
-      const res: { SharePDF: SharedPdfType } = await graphqlClient.request(
-        SHARE_PDF,
-        {
+      const res: { SharePDF: { data: SharedPdfType; isexist: boolean } } =
+        await graphqlClient.request(SHARE_PDF, {
           pdf_id: pdf.id,
           name: pdf.name,
           unique_address: crypto.randomUUID().slice(0, 10),
@@ -59,12 +59,16 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
           is_protected: enablePassword,
           password: enablePassword ? hashval : null,
           is_onetime: isOnetime,
-        }
-      );
-
+        });
       console.log("Shared PDF:", res);
-      setSharedFiles([res.SharePDF, ...(sharedFiles || [])]);
-      setSharedFile(res.SharePDF);
+      if (res.SharePDF.isexist) {
+        console.log("Already shared:", res.SharePDF.data);
+        setSharedFile(res.SharePDF.data);
+        setAlreadyExistsWarning(true);
+      } else {
+        setSharedFiles([res.SharePDF.data, ...(sharedFiles || [])]);
+        setSharedFile(res.SharePDF.data);
+      }
     } catch (err) {
       console.error(err);
       alert("Something went wrong.");
@@ -91,8 +95,6 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
   }, [open]);
   return (
     <Dialog open={open} onOpenChange={(val) => !isSharing && setOpen(val)}>
-
-
       <DialogContent className="max-w-sm p-0 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 20 }}
@@ -103,7 +105,8 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
         >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-                <Share2 className="w-5 h-5 text-primary" />Share PDF
+              <Share2 className="w-5 h-5 text-primary" />
+              Share PDF
             </DialogTitle>
 
             <DialogDescription>
@@ -119,7 +122,7 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
             <Checkbox
               id="enable-password"
               checked={enablePassword}
-              onClick={(e)=>e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               onCheckedChange={(val) => setEnablePassword(val === true)}
             />
             <label htmlFor="enable-password" className="cursor-pointer">
@@ -144,7 +147,7 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="mt-1"
-                  onClick={(e)=>e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 />
               </motion.div>
             )}
@@ -158,13 +161,22 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
             <Checkbox
               id="is-Onetime"
               checked={isOnetime}
-              onClick={(e)=>e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
               onCheckedChange={(val) => setIsOnetime(val === true)}
             />
             <label htmlFor="is-Onetime" className="cursor-pointer">
               One-time access link (expires after first use)
             </label>
           </motion.div>
+          {alreadyExistsWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-3 rounded-md bg-yellow-100 border border-yellow-300 text-yellow-800 text-sm"
+            >
+              ⚠️ This PDF is already shared. Showing the existing link.
+            </motion.div>
+          )}
           {sharedFile && (
             <motion.div
               whileHover={{ scale: 1.01 }}
@@ -178,8 +190,9 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
                 </p>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    copyToClipboard()}}
+                    e.stopPropagation();
+                    copyToClipboard();
+                  }}
                   className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
                   title="copy"
                 >
@@ -205,7 +218,10 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
-              <Button onClick={handleShare} disabled={isSharing||sharedFile!=null}>
+              <Button
+                onClick={handleShare}
+                disabled={isSharing || sharedFile != null}
+              >
                 {isSharing ? "Sharing..." : "Share"}
               </Button>
             </motion.div>

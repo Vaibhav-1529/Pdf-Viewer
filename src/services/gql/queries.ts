@@ -91,20 +91,40 @@ export const DELETE_PDF_FROM_S3 = gql`
   }
 `;
 export const SHARE_PDF = gql`
-mutation Mutation($pdf_id: String!, $unique_address: String!, $owner_id: String!, $is_protected: Boolean!,$password: String,$is_onetime:Boolean!,$name:String!) {
-  SharePDF(pdf_id: $pdf_id, unique_address: $unique_address, owner_id: $owner_id, is_protected: $is_protected,password:$password,is_onetime:$is_onetime,name:$name) {
-    id
-    name
-    created_at
-    pdf_id
-    owner_id
-    unique_address
-    is_protected
-    password
-    is_onetime
+mutation Mutation(
+  $pdf_id: String!,
+  $unique_address: String!,
+  $owner_id: String!,
+  $is_protected: Boolean!,
+  $password: String,
+  $is_onetime: Boolean!,
+  $name: String!
+) {
+  SharePDF(
+    pdf_id: $pdf_id,
+    unique_address: $unique_address,
+    owner_id: $owner_id,
+    is_protected: $is_protected,
+    password: $password,
+    is_onetime: $is_onetime,
+    name: $name
+  ) {
+    isexist
+    data {
+      id
+      name
+      created_at
+      pdf_id
+      owner_id
+      unique_address
+      is_protected
+      password
+      is_onetime
+    }
   }
 }
-`
+`;
+
 export const GET_SHARED_PDFS = gql`
   query Query($owner_id: String!) {
   getSharedPDFs(owner_id: $owner_id) {

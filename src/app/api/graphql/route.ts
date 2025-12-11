@@ -40,6 +40,10 @@ type PresignedResponse {
     password: String
     is_onetime: Boolean!
   }
+type SharePDFResponse {
+  data: SharedPDF
+  isexist: Boolean!
+}
 
   type Query {
     getPdfById(id:String!):PDF
@@ -69,7 +73,7 @@ type PresignedResponse {
       password:String
       is_onetime:Boolean!
       name:String!
-    ): SharedPDF!
+    ): SharePDFResponse!
     deleteSharedPDF(unique_address:String
     pdf_id:String
     ):Boolean!
