@@ -10,12 +10,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserContext } from "@/context/UserContext";
 import { useAuth } from "@/context/AuthProvider";
-import graphqlClient from "@/services/GraphQlClient/gqlclient";
-import { UPLOAD_PDF } from "@/services/gql/queries";
+import { uploadPdf } from "@/HelperFun/HelperFun";
 
 export default function HomePage() {
   const { pdfs, setPdfs, activePDF, setActivePDF } = useUserContext();
@@ -24,51 +23,24 @@ export default function HomePage() {
   const [fileuploading, setFileUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<any | null>(null);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFileUploading(true);
-    if (!User?.id) {
-      alert("Please log in before uploading a PDF.");
-      return;
-    }
-
-    const files = event.target.files;
-    if (!files) return;
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-
-      reader.onload = async () => {
-        const base64Data = reader.result as string;
-
-        const pdfPayload = {
-          name: file.name,
-          mimeType: file.type,
-          data: base64Data,
-          userId: User.id,
-        };
-
-        try {
-          const response = await graphqlClient.request(UPLOAD_PDF, pdfPayload);
-          const uploadedPDF = response.uploadPDF;
-
-          setSelectedFile(uploadedPDF);
-          setPdfs((prev) => [...prev, uploadedPDF]);
-          setActivePDF(uploadedPDF);
-          setFileUploading(false);
-          console.log("PDF successfully uploaded:", uploadedPDF);
-        } catch (error) {
-          console.error("Error uploading PDF:", error);
-        }
-      };
-
-      reader.readAsDataURL(file);
-    });
-  };
+const handleFileUpload = async (event: any) => {
+  setFileUploading(true);
+    try {
+    const UploadedPdf=await uploadPdf({files:event.target.files,User})
+    setSelectedFile(UploadedPdf);
+    setPdfs((prev) => [...prev, UploadedPdf]);
+    setActivePDF(UploadedPdf);
+  } catch (error) {
+    console.log("UPLOAD ERROR:", error);
+  } finally {
+    setFileUploading(false);
+  }
+};
 
   const handleViewPdf = () => {
     if (selectedFile) {
       router.push(`/viewer?pdf=${encodeURIComponent(selectedFile.id)}`);
-    } else if (pdfs.length > 0) {
+    } else if (pdfs&&pdfs.length > 0) {
       setActivePDF(null);
       router.push("/viewer"); 
     } else {

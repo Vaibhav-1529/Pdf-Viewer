@@ -1,8 +1,8 @@
 "use client";
 
 import { useAuth } from "@/context/AuthProvider";
-import { PdfType } from "@/context/UserContext";
-import { GET_PDFS } from "@/services/gql/queries";
+import { PdfType, SharedPdfType } from "@/context/UserContext";
+import { GET_PDFS, GET_SHARED_PDFS } from "@/services/gql/queries";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
 import { use, useEffect, useState } from "react";
 export function useStoredPDFs() {
@@ -18,7 +18,7 @@ export function useStoredPDFs() {
 
         const stored: { getPDFs: PdfType[] } = await graphqlClient.request(
           GET_PDFS,
-          { userId: User?.id }
+          { user_id: User?.id }
         );
 
         setPdfs(stored?.getPDFs || []);
@@ -35,6 +35,32 @@ export function useStoredPDFs() {
 
   return { pdfs, setPdfs, isLoading };
 }
+export function useSharedPDFs() {
+  const [sharedFiles, setSharedFiles] = useState<SharedPdfType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { User } = useAuth();
+  useEffect(() => {
+    if (!User?.id) return;
+    async function getSharedPDFs() {
+      try {
+        setIsLoading(true);
+        const stored: { getSharedPDFs: SharedPdfType[] } = await graphqlClient.request(
+          GET_SHARED_PDFS,
+          { owner_id: User?.id }
+        );
+        setSharedFiles(stored?.getSharedPDFs || []);
+      } catch (err) {
+        console.error("Error fetching PDFs:", err);
+        setSharedFiles([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getSharedPDFs();
+  }, [User]);
+
+  return { sharedFiles, setSharedFiles, isLoading };
+}
 
 export function useActivePDF() {
   const { pdfs } = useStoredPDFs();
@@ -44,7 +70,6 @@ export function useActivePDF() {
 
     const storedId = localStorage.getItem("activePDFId");
     if (!storedId) return;
-
     const found = pdfs.find((p) => p.id === storedId);
     if (found) setActivePDFState(found);
   }, [pdfs]);

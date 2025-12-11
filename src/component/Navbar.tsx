@@ -10,33 +10,19 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { SignupButton } from "./modals/SIgnupButton";
-import { SigninButton } from "./modals/SigninButton";
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  SignOutButton,
+} from '@clerk/nextjs'
 import { useAuth } from "@/context/AuthProvider";
-import graphqlClient from "@/services/GraphQlClient/gqlclient";
-import { LOGOUT_USER } from "@/services/gql/queries";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   const { User, setUser } = useAuth();
-
-  const handleSignOut = async () => {
-    try {
-      const user = await graphqlClient.request(LOGOUT_USER);
-      if (user) setUser(null);
-      localStorage.removeItem("Active_user");
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Error during sign out:", error);
-    }
-  };
-
   return (
     <header className="w-full border-b border-border bg-background sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
@@ -51,9 +37,17 @@ export function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex items-center gap-3">
-          {User ? (
-            <DropdownMenu>
+        <div className="flex items-center gap-3"> 
+                      <SignedOut>
+              <SignInButton />
+              <SignUpButton>
+                <button className="bg-[#6c47ff] text-ceramic-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  Sign Up
+                </button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer hover:ring-2 hover:ring-primary transition">
                   <AvatarImage src={User?.avatar || "https://github.com/shadcn.png"} alt={User?.name} />
@@ -65,17 +59,14 @@ export function Navbar() {
                   <Link href="/profile" className="w-full block">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings" className="w-full block">Settings</Link>
+                <SignOutButton>
+                    <p className="w-full block text-sm pl-2 ">Signed Out</p>
+                </SignOutButton>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
+
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-            <div className="flex gap-2 sm:gap-3">
-              <SigninButton />
-              <SignupButton />
-            </div>
-          )}
+            </SignedIn>              
         </div>
       </div>
     </header>

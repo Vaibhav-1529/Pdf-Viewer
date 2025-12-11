@@ -1,6 +1,5 @@
 "use client";
-
-import { CheckUser } from "@/hooks/CheckUser";
+import { useUser } from "@clerk/nextjs";
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 
 type AuthContextType = {
@@ -24,25 +23,23 @@ export function useAuth() {
 
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [User, setUser] = useState<UserType | null>(null);
-
+  const { isLoaded, isSignedIn, user } = useUser();
   useEffect(() => {
-    async function validateUser() {
-      try {
-        const currentuser = await CheckUser();
-        if (currentuser) {
-          setUser(currentuser);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error("Error validating user:", err);
+    async function fetchUser() {
+      if (isSignedIn) {
+        const currentUser: UserType = {
+          id: user.id,
+          name: user.fullName || "Unnamed User",
+          email: user.primaryEmailAddress?.emailAddress || "No Email",
+          avatar: user.imageUrl || "",
+        };
+        setUser(currentUser);
+      } else {
         setUser(null);
       }
     }
-
-    validateUser();
-  }, []);
-
+    fetchUser();
+  }, [isLoaded, isSignedIn, user]);
   return (
     <AuthContext.Provider value={{ User, setUser }}>
       {children}

@@ -1,91 +1,133 @@
 import { ApolloServer } from "@apollo/server";
 import { NextRequest, NextResponse } from "next/server";
 import { gql } from "graphql-tag";
-import {
-  createUser,
-  loginUser,
-  logoutUser,
-  getuserByToken,
-} from "@/services/resolver/user";
-import { deletePDF, getPDFs, uploadPDF } from "@/services/resolver/pdf";
+import { deletePDF, getPdfById, getPDFs, uploadPDF } from "@/services/resolver/pdf";
+import { deleteFromS3, getPresignedURL, getSharedPdfUrl } from "@/services/resolver/s3";
+import { getPdfUrl } from "@/services/resolver/s3";
+import { deleteSharedPDF, getOneSharedPdf, getSharedPDFs, SharePDF } from "@/services/resolver/sharedPdf";
+
 const allowedOrigins = [
   "http://localhost:3000",
+  "https://studio.apollographql.com",
   "https://pdf-viewer-ten-rouge.vercel.app",
   "https://pdf-viewer-dbt3d2fwe-vaibhav-1529s-projects.vercel.app",
   "https://pdf-viewer-qab3xkdh2-vaibhav-1529s-projects.vercel.app",
+  "https://pdf-store-s3.s3.eu-north-1.amazonaws.com"
 ];
+
 const typeDefs = gql`
-  type User {
-    id: String!
-    name: String!
-    email: String!
-    username: String!
-    avatar: String
-  }
+type PresignedResponse {
+  url: String
+  key: String
+  error:String
+}
 
   type PDF {
     id: String!
     name: String!
-    mimeType: String!
-    data: String!
-    createdAt: String!
-    userId: String!
+    mime_type: String!
+    created_at: String!
+    key: String!
+    user_id: String!
+    size: Int!
+  }
+  type SharedPDF {
+    id: String!
+    name: String!
+    created_at: String!
+    pdf_id: String!
+    owner_id: String!
+    unique_address: String!
+    is_protected: Boolean!
+    password: String
+    is_onetime: Boolean!
   }
 
   type Query {
-    loginUser(email: String!, password: String!): User
-    logoutUser: Boolean!
-    getPDFs(userId: String!): [PDF!]!
-    getuserByToken(userId: String!): User
+    getPdfById(id:String!):PDF
+    getPDFs(user_id: String!): [PDF!]
+    getPresignedURL(mime_type: String!): PresignedResponse!
+    getPdfUrl(key: String!): PresignedResponse!
+    getSharedPDFs(owner_id:String!): [SharedPDF!]
+    getOneSharedPdf(unique_address:String!):SharedPDF
+    getSharedPdfUrl(pdf_id:String!):PresignedResponse!
   }
 
   type Mutation {
-    createUser(
-      name: String!
-      email: String!
-      username: String!
-      password: String!
-      avatar: String
-    ): User!
-
     uploadPDF(
       name: String!
-      mimeType: String!
-      data: String!
-      userId: String!
+      mime_type: String!
+      user_id: String!
+      key: String!
+      size: Int!
     ): PDF!
     deletePDF(id: String!): Boolean!
+    deleteFromS3(key: String!): Boolean!
+    SharePDF(
+      pdf_id:String!
+      unique_address:String!
+      owner_id:String!
+      is_protected:Boolean!
+      password:String
+      is_onetime:Boolean!
+      name:String!
+    ): SharedPDF!
+    deleteSharedPDF(unique_address:String
+    pdf_id:String
+    ):Boolean!
   }
 `;
 
 const resolvers = {
   Query: {
-    loginUser,
-    logoutUser,
+    getPdfById,
     getPDFs,
-    getuserByToken,
+    getPresignedURL,
+    getPdfUrl,
+    getSharedPDFs,
+    getOneSharedPdf,
+    getSharedPdfUrl
   },
   Mutation: {
-    createUser,
     uploadPDF,
     deletePDF,
+    deleteFromS3,
+    SharePDF,
+    deleteSharedPDF
   },
 };
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
 const startServer = server.start();
-export async function POST(req: NextRequest) {
-  const origin = req.headers.get("origin") || "";
+
+function buildHeaders(origin: string) {
   const headers: Record<string, string> = {};
 
   if (allowedOrigins.includes(origin)) {
     headers["Access-Control-Allow-Origin"] = origin;
-    headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    headers["Access-Control-Allow-Credentials"] = "true";
   }
+
+  headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
+  headers["Access-Control-Allow-Headers"] =
+    "Content-Type, Authorization, Credentials";
+  return headers;
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
+  const headers = buildHeaders(origin);
+
+  return new NextResponse(null, { status: 204, headers });
+}
+
+export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
+  const headers = buildHeaders(origin);
 
   try {
     await startServer;
@@ -97,29 +139,21 @@ export async function POST(req: NextRequest) {
       variables,
       operationName,
     });
-const payload = result.body.kind === "single" ? result.body.singleResult : result.body;
 
-return NextResponse.json(payload, { headers });
+    const payload =
+      result.body.kind === "single"
+        ? result.body.singleResult
+        : result.body;
+
+    return NextResponse.json(payload, { headers });
   } catch (err: any) {
-    console.error("GraphQL Error:", err);
     return NextResponse.json(
       { errors: [{ message: err.message }] },
       { status: 500, headers }
     );
   }
 }
-export async function OPTIONS(req: NextRequest) {
-  const origin = req.headers.get("origin") || "";
-  const headers: Record<string, string> = {};
 
-  if (allowedOrigins.includes(origin)) {
-    headers["Access-Control-Allow-Origin"] = origin;
-    headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS";
-    headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
-  }
-
-  return new NextResponse(null, { status: 204, headers });
-}
 export async function GET() {
   return NextResponse.json({ status: "GraphQL API Running" });
 }

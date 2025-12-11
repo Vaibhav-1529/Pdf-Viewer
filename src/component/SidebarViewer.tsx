@@ -15,87 +15,62 @@ import { FileText, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { useAuth } from "@/context/AuthProvider";
 import graphqlClient from "@/services/GraphQlClient/gqlclient";
-import { UPLOAD_PDF, DELETE_PDF } from "@/services/gql/queries";
+import {
+  UPLOAD_PDF,
+  DELETE_PDF,
+  DELETE_PDF_FROM_S3,
+  GET_PRESIGNED_URL,
+} from "@/services/gql/queries";
 import { useRouter } from "next/navigation";
 import PDFActionsMenu from "./modals/PDFActionsMenu";
 import AboutPDFModal from "./modals/AboutPDFModal";
 import DeletePDFModal from "./modals/DeletePDFModal";
+import { DeletePDF, uploadPdf } from "@/HelperFun/HelperFun";
 
 export default function SidebarViewer() {
   const { pdfs, activePDF, setActivePDF, setPdfs } = useUserContext();
   const { User } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
-
   const [aboutPDF, setAboutPDF] = useState<PdfType | null>(null);
   const [deletePDF, setDeletePDF] = useState<PdfType | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleUploadClick = () => fileInputRef.current?.click();
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!User?.id) {
-      alert("Please log in before uploading.");
-      return;
-    }
-
-    const files = event.target.files;
-    if (!files) return;
-
+  const handleUploadClick =async () => fileInputRef.current?.click();
+  const handleFileUpload = async (event: any) => {
     setIsUploading(true);
-
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-
-      reader.onload = async () => {
-        const base64Data = reader.result as string;
-
-        const payload = {
-          name: file.name,
-          mimeType: file.type,
-          data: base64Data,
-          size: file.size,
-          userId: User.id,
-        };
-
-        try {
-          const response = await graphqlClient.request(UPLOAD_PDF, payload);
-          const uploadedPDF = response.uploadPDF;
-
-          setPdfs((prev) => [...prev, uploadedPDF]);
-          setActivePDF(uploadedPDF);
-        } catch (error) {
-          console.error("Upload error:", error);
-        } finally {
-          setIsUploading(false);
-        }
-      };
-
-      reader.readAsDataURL(file);
-    });
+    try {
+      const UploadedPdf=await uploadPdf({files:event.target.files,User})
+      setPdfs((prev) => [...prev, UploadedPdf]);
+      setActivePDF(UploadedPdf);
+    } catch (error) {
+      console.log("UPLOAD ERROR:", error);
+    } finally {
+      setIsUploading(false);
+    }
   };
-const confirmDelete = async (pdf: any) => {
-  try {
-    setIsDeleting(true);
-    await graphqlClient.request(DELETE_PDF, { id: pdf.id });
 
-    setPdfs((prev) => {
-      const updated = prev.filter((p) => p.id !== pdf.id);
-
-      if (activePDF?.id === pdf.id) {
-        setActivePDF(updated[0] || null);
-      }
-
-      return updated;
-    });
-
-    setDeletePDF(null);
-  } catch (error) {
-    console.error("Delete error:", error);
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  const confirmDelete = async (pdf: any) => {
+    try {
+      setIsDeleting(true);
+      const res= await DeletePDF(pdf);
+      if (res)
+      console.log("Delete", pdf.key);
+      setPdfs((prev) => {
+        const updated = prev.filter((p) => p.id !== pdf.id);
+        if (activePDF?.id === pdf.id) {
+          setActivePDF(updated[0] || null);
+        }
+        return updated;
+      });
+      setDeletePDF(null);
+    } catch (error) {
+      console.error("Delete error:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -112,9 +87,10 @@ const confirmDelete = async (pdf: any) => {
                 className={`
                   w-full flex items-center gap-3 px-3 py-3 rounded-xl border border-dashed 
                   transition-all
-                  ${isUploading 
-                    ? "opacity-50 cursor-not-allowed" 
-                    : "border-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/10"
+                  ${
+                    isUploading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "border-blue-400 hover:bg-blue-500/10 dark:hover:bg-blue-400/10"
                   }
                 `}
               >
@@ -141,12 +117,12 @@ const confirmDelete = async (pdf: any) => {
               />
             </div>
             <SidebarMenu className="space-y-1 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400/30">
-              {pdfs.length === 0 ? (
+              {pdfs?.length === 0 ? (
                 <p className="text-sm text-muted-foreground p-3 italic opacity-80">
                   No PDFs uploaded yet
                 </p>
               ) : (
-                pdfs.map((pdf) => {
+                pdfs?.map((pdf) => {
                   const isActive = activePDF?.id === pdf.id;
 
                   return (
@@ -158,9 +134,10 @@ const confirmDelete = async (pdf: any) => {
                         }}
                         className={`
                           flex items-center gap-3 flex-1 px-3 py-2 rounded-lg border transition-all 
-                          ${isActive 
-                            ? "bg-blue-500/20 dark:bg-blue-400/20 border-blue-500" 
-                            : "hover:bg-blue-500/10 dark:hover:bg-blue-400/10 border-transparent"
+                          ${
+                            isActive
+                              ? "bg-blue-500/20 dark:bg-blue-400/20 border-blue-500"
+                              : "hover:bg-blue-500/10 dark:hover:bg-blue-400/10 border-transparent"
                           }
                         `}
                       >
@@ -180,10 +157,10 @@ const confirmDelete = async (pdf: any) => {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-      <AboutPDFModal 
-        open={!!aboutPDF} 
-        pdf={aboutPDF} 
-        onClose={() => setAboutPDF(null)} 
+      <AboutPDFModal
+        open={!!aboutPDF}
+        pdf={aboutPDF}
+        onClose={() => setAboutPDF(null)}
       />
 
       <DeletePDFModal
