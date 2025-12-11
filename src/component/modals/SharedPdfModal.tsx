@@ -43,6 +43,10 @@ export default function SharedPdfModal({ pdf, islogo, open, setOpen }: any) {
     }
     setIsSharing(true);
     try {
+      if(password.length<4){
+        alert("Password atleast contain 4 character")
+        return;
+      }
       const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY!;
       const hashval = CryptoJS.AES.encrypt(password, secretKey).toString();
       const res: { SharePDF: SharedPdfType } = await graphqlClient.request(
